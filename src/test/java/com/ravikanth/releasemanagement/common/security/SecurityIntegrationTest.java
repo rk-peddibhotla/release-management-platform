@@ -11,6 +11,9 @@ import com.ravikanth.releasemanagement.common.security.JwtService;
 import com.ravikanth.releasemanagement.common.security.RestAccessDeniedHandler;
 import com.ravikanth.releasemanagement.common.security.RestAuthenticationEntryPoint;
 
+import com.ravikanth.releasemanagement.application.ApplicationService;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import com.ravikanth.releasemanagement.auth.AuthService;
 
 import org.junit.jupiter.api.Test;
@@ -53,6 +56,9 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private UserDetailsService userDetailsService;
+
+    @MockitoBean
+    private ApplicationService applicationService;
 
     @Test
     void shouldReturn401WhenAuthorizationHeaderIsMissing()
