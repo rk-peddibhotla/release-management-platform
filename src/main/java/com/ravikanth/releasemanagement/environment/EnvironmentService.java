@@ -1,3 +1,4 @@
+
 package com.ravikanth.releasemanagement.environment;
 
 import com.ravikanth.releasemanagement.application.Application;
@@ -97,7 +98,10 @@ public class EnvironmentService {
             throw new ApplicationNotFoundException(applicationId);
         }
 
-        return environmentRepository.findAll(pageable);
+        return environmentRepository.findByApplicationId(
+                applicationId,
+                pageable
+        );
     }
 
     @Transactional
@@ -118,8 +122,7 @@ public class EnvironmentService {
 
         String normalizedName = name.trim();
 
-        Long applicationId =
-                environment.getApplication().getId();
+        Long applicationId = environment.getApplication().getId();
 
         if (environmentRepository
                 .existsByApplicationIdAndNameIgnoreCase(

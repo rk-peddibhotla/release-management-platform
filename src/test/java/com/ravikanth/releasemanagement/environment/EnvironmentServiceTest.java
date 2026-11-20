@@ -5,6 +5,7 @@ import com.ravikanth.releasemanagement.application.ApplicationNotFoundException;
 import com.ravikanth.releasemanagement.application.ApplicationRepository;
 import com.ravikanth.releasemanagement.common.audit.AuditLogService;
 
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -341,22 +342,21 @@ class EnvironmentServiceTest {
     // GET BY APPLICATION
     // -------------------------------------------------------------------------
 
-    @Test
-    void shouldGetEnvironmentsByApplication() {
-        PageRequest pageable =
-                PageRequest.of(0, 10);
 
-        Page<Environment> page =
-                new PageImpl<>(
-                        List.of(environment),
-                        pageable,
-                        1
-                );
+       @Test
+        void shouldGetEnvironmentsByApplication() {
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        Page<Environment> page = new PageImpl<>(
+                List.of(environment),
+                pageable,
+                1
+        );
 
         when(applicationRepository.existsById(1L))
                 .thenReturn(true);
 
-        when(environmentRepository.findAll(pageable))
+        when(environmentRepository.findByApplicationId(1L, pageable))
                 .thenReturn(page);
 
         Page<Environment> result =
@@ -367,7 +367,16 @@ class EnvironmentServiceTest {
 
         assertThat(result.getContent())
                 .containsExactly(environment);
-    }
+
+        verify(applicationRepository).existsById(1L);
+
+        verify(environmentRepository)
+                .findByApplicationId(1L, pageable);
+
+        verify(environmentRepository, never())
+                .findAll(pageable);
+        }
+
 
     @Test
     void shouldRejectInvalidApplicationIdWhenGettingEnvironments() {
@@ -384,10 +393,10 @@ class EnvironmentServiceTest {
                 .hasMessage("Application ID must be positive.");
     }
 
-    @Test
-    void shouldRejectMissingApplicationWhenGettingEnvironments() {
-        PageRequest pageable =
-                PageRequest.of(0, 10);
+
+        @Test
+        void shouldRejectMissingApplicationWhenGettingEnvironments() {
+        PageRequest pageable = PageRequest.of(0, 10);
 
         when(applicationRepository.existsById(1L))
                 .thenReturn(false);
@@ -400,9 +409,14 @@ class EnvironmentServiceTest {
         )
                 .isInstanceOf(ApplicationNotFoundException.class);
 
+        verify(applicationRepository).existsById(1L);
+
+        verify(environmentRepository, never())
+                .findByApplicationId(1L, pageable);
+
         verify(environmentRepository, never())
                 .findAll(pageable);
-    }
+        }
 
     // -------------------------------------------------------------------------
     // UPDATE
@@ -867,4 +881,12 @@ class EnvironmentServiceTest {
                 eq(null)
         );
     }
+
+
+
+
+
+
+
+
 }

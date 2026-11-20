@@ -17,7 +17,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.ravikanth.releasemanagement.auth.AuthService;
 
 import org.junit.jupiter.api.Test;
-
+import com.ravikanth.releasemanagement.environment.EnvironmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -59,6 +59,9 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private ApplicationService applicationService;
+
+    @MockitoBean
+    private EnvironmentService environmentService;
 
     @Test
     void shouldReturn401WhenAuthorizationHeaderIsMissing()
