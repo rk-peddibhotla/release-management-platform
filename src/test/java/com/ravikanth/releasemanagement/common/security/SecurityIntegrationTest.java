@@ -4,7 +4,8 @@ package com.ravikanth.releasemanagement.common.security;
 import com.ravikanth.releasemanagement.common.config.PasswordConfig;
 import com.ravikanth.releasemanagement.common.config.SecurityConfig;
 import com.ravikanth.releasemanagement.common.exception.GlobalExceptionHandler;
-
+import com.ravikanth.releasemanagement.user.UserService;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.ravikanth.releasemanagement.common.security.JwtAuthenticationFilter;
 import com.ravikanth.releasemanagement.common.security.JwtService;
 import com.ravikanth.releasemanagement.common.security.RestAccessDeniedHandler;
@@ -43,6 +44,9 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private UserService userService;
 
     @MockitoBean
     private AuthService authService;

@@ -11,7 +11,7 @@ import com.ravikanth.releasemanagement.release.ReleaseAlreadyExistsException;
 import com.ravikanth.releasemanagement.release.ReleaseNotFoundException;
 import com.ravikanth.releasemanagement.user.UserAlreadyExistsException;
 import com.ravikanth.releasemanagement.user.UserNotFoundException;
-
+import org.springframework.security.access.AccessDeniedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
@@ -22,6 +22,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -178,6 +179,25 @@ public class GlobalExceptionHandler {
                 Map.of()
         );
     }
+
+
+
+    @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ApiErrorResponse> handleAccessDenied(
+                AccessDeniedException ex,
+                HttpServletRequest request
+        ) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ApiErrorResponse(
+                        Instant.now(),
+                        HttpStatus.FORBIDDEN.value(),
+                        "Forbidden",
+                        "Access denied.",
+                        request.getRequestURI(),
+                        Map.of()
+                ));
+        }
 
     private ResponseEntity<ApiErrorResponse> buildResponse(
             HttpStatus status,
