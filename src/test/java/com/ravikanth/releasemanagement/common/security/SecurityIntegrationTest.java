@@ -1,31 +1,26 @@
 
 package com.ravikanth.releasemanagement.common.security;
 
+import com.ravikanth.releasemanagement.application.ApplicationService;
+import com.ravikanth.releasemanagement.approval.ApprovalService;
+import com.ravikanth.releasemanagement.auth.AuthService;
+import com.ravikanth.releasemanagement.changerequest.ChangeRequestService;
 import com.ravikanth.releasemanagement.common.config.PasswordConfig;
 import com.ravikanth.releasemanagement.common.config.SecurityConfig;
 import com.ravikanth.releasemanagement.common.exception.GlobalExceptionHandler;
-import com.ravikanth.releasemanagement.user.UserService;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import com.ravikanth.releasemanagement.common.security.JwtAuthenticationFilter;
-import com.ravikanth.releasemanagement.common.security.JwtService;
-import com.ravikanth.releasemanagement.common.security.RestAccessDeniedHandler;
-import com.ravikanth.releasemanagement.common.security.RestAuthenticationEntryPoint;
+import com.ravikanth.releasemanagement.deployment.DeploymentService;
+import com.ravikanth.releasemanagement.environment.EnvironmentService;
 import com.ravikanth.releasemanagement.release.ReleaseService;
-import com.ravikanth.releasemanagement.application.ApplicationService;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import com.ravikanth.releasemanagement.auth.AuthService;
+import com.ravikanth.releasemanagement.user.UserService;
 
 import org.junit.jupiter.api.Test;
-import com.ravikanth.releasemanagement.environment.EnvironmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -65,6 +60,15 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private ReleaseService releaseService;
+
+    @MockitoBean
+    private ChangeRequestService changeRequestService;
+
+    @MockitoBean
+    private ApprovalService approvalService;
+
+    @MockitoBean
+    private DeploymentService deploymentService;
 
     @Test
     void shouldReturn401WhenAuthorizationHeaderIsMissing()
