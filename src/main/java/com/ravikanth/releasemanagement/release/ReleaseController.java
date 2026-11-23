@@ -1,3 +1,4 @@
+
 package com.ravikanth.releasemanagement.release;
 
 import com.ravikanth.releasemanagement.release.dto.CreateReleaseRequest;
@@ -6,7 +7,12 @@ import com.ravikanth.releasemanagement.release.dto.UpdateReleaseRequest;
 import com.ravikanth.releasemanagement.user.User;
 import com.ravikanth.releasemanagement.user.UserService;
 
+import org.springdoc.core.annotations.ParameterObject;
+
 import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+@Tag(name = "Releases", description = "Plan and manage application releases.")
 public class ReleaseController {
 
     private final ReleaseService releaseService;
@@ -34,6 +41,7 @@ public class ReleaseController {
     }
 
     @PostMapping("/environments/{environmentId}/releases")
+    @Operation(summary = "Create release")
     public ResponseEntity<ReleaseResponse> createRelease(
             @PathVariable Long environmentId,
             @Valid @RequestBody CreateReleaseRequest request,
@@ -53,6 +61,7 @@ public class ReleaseController {
     }
 
     @GetMapping("/releases/{id}")
+    @Operation(summary = "Get release")
     public ResponseEntity<ReleaseResponse> getReleaseById(
             @PathVariable Long id
     ) {
@@ -64,8 +73,10 @@ public class ReleaseController {
     }
 
     @GetMapping("/environments/{environmentId}/releases")
+    @Operation(summary = "List environment releases")
     public ResponseEntity<Page<ReleaseResponse>> getReleasesByEnvironment(
             @PathVariable Long environmentId,
+            @ParameterObject
             @PageableDefault(size = 20, sort = "id") Pageable pageable
     ) {
         Page<ReleaseResponse> releases =
@@ -78,6 +89,7 @@ public class ReleaseController {
     }
 
     @PutMapping("/releases/{id}")
+    @Operation(summary = "Update release")
     public ResponseEntity<ReleaseResponse> updateRelease(
             @PathVariable Long id,
             @Valid @RequestBody UpdateReleaseRequest request,
@@ -97,6 +109,7 @@ public class ReleaseController {
     }
 
     @PatchMapping("/releases/{id}/cancel")
+    @Operation(summary = "Cancel release")
     public ResponseEntity<ReleaseResponse> cancelRelease(
             @PathVariable Long id,
             Authentication authentication
@@ -112,6 +125,7 @@ public class ReleaseController {
     }
 
     @PostMapping("/releases/{releaseId}/change-requests/{changeRequestId}")
+    @Operation(summary = "Add change request to release")
     public ResponseEntity<ReleaseResponse> addChangeRequest(
             @PathVariable Long releaseId,
             @PathVariable Long changeRequestId,
@@ -129,6 +143,7 @@ public class ReleaseController {
     }
 
     @DeleteMapping("/releases/{releaseId}/change-requests/{changeRequestId}")
+    @Operation(summary = "Remove change request from release")
     public ResponseEntity<ReleaseResponse> removeChangeRequest(
             @PathVariable Long releaseId,
             @PathVariable Long changeRequestId,
@@ -146,6 +161,7 @@ public class ReleaseController {
     }
 
     @PatchMapping("/releases/{id}/start")
+    @Operation(summary = "Start release deployment")
     public ResponseEntity<ReleaseResponse> startDeployment(
             @PathVariable Long id,
             Authentication authentication

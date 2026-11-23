@@ -4,11 +4,15 @@ package com.ravikanth.releasemanagement.environment;
 import com.ravikanth.releasemanagement.environment.dto.CreateEnvironmentRequest;
 import com.ravikanth.releasemanagement.environment.dto.EnvironmentResponse;
 import com.ravikanth.releasemanagement.environment.dto.UpdateEnvironmentRequest;
-
 import com.ravikanth.releasemanagement.user.User;
 import com.ravikanth.releasemanagement.user.UserService;
 
+import org.springdoc.core.annotations.ParameterObject;
+
 import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+@Tag(name = "Environments", description = "Manage application environments.")
 public class EnvironmentController {
 
     private final EnvironmentService environmentService;
@@ -36,6 +41,7 @@ public class EnvironmentController {
     }
 
     @PostMapping("/applications/{applicationId}/environments")
+    @Operation(summary = "Create environment")
     public ResponseEntity<EnvironmentResponse> createEnvironment(
             @PathVariable Long applicationId,
             @Valid @RequestBody CreateEnvironmentRequest request,
@@ -54,6 +60,7 @@ public class EnvironmentController {
     }
 
     @GetMapping("/environments/{id}")
+    @Operation(summary = "Get environment")
     public ResponseEntity<EnvironmentResponse> getEnvironmentById(
             @PathVariable Long id
     ) {
@@ -66,8 +73,10 @@ public class EnvironmentController {
     }
 
     @GetMapping("/applications/{applicationId}/environments")
+    @Operation(summary = "List application environments")
     public ResponseEntity<Page<EnvironmentResponse>> getEnvironmentsByApplication(
             @PathVariable Long applicationId,
+            @ParameterObject
             @PageableDefault(size = 20, sort = "id") Pageable pageable
     ) {
         Page<EnvironmentResponse> environments =
@@ -80,6 +89,7 @@ public class EnvironmentController {
     }
 
     @PutMapping("/environments/{id}")
+    @Operation(summary = "Update environment")
     public ResponseEntity<EnvironmentResponse> updateEnvironment(
             @PathVariable Long id,
             @Valid @RequestBody UpdateEnvironmentRequest request,
@@ -98,6 +108,7 @@ public class EnvironmentController {
     }
 
     @PatchMapping("/environments/{id}/activate")
+    @Operation(summary = "Activate environment")
     public ResponseEntity<EnvironmentResponse> activateEnvironment(
             @PathVariable Long id,
             Authentication authentication
@@ -113,6 +124,7 @@ public class EnvironmentController {
     }
 
     @PatchMapping("/environments/{id}/deactivate")
+    @Operation(summary = "Deactivate environment")
     public ResponseEntity<EnvironmentResponse> deactivateEnvironment(
             @PathVariable Long id,
             Authentication authentication

@@ -21,4 +21,8 @@ public interface ChangeRequestRepository
     );
 
     List<ChangeRequest> findByStatus(ChangeRequestStatus status);
+    Page<ChangeRequest> findByStatus(
+        ChangeRequestStatus status,
+        Pageable pageable
+    );
 }

@@ -1,13 +1,18 @@
+
 package com.ravikanth.releasemanagement.application;
 
 import com.ravikanth.releasemanagement.application.dto.ApplicationResponse;
 import com.ravikanth.releasemanagement.application.dto.CreateApplicationRequest;
 import com.ravikanth.releasemanagement.application.dto.UpdateApplicationRequest;
+import com.ravikanth.releasemanagement.user.User;
+import com.ravikanth.releasemanagement.user.UserService;
+
+import org.springdoc.core.annotations.ParameterObject;
 
 import jakarta.validation.Valid;
 
-import com.ravikanth.releasemanagement.user.User;
-import com.ravikanth.releasemanagement.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,17 +26,22 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/applications")
 @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+@Tag(name = "Applications", description = "Manage registered applications.")
 public class ApplicationController {
 
     private final ApplicationService applicationService;
     private final UserService userService;
 
-    public ApplicationController(ApplicationService applicationService, UserService userService) {
+    public ApplicationController(
+            ApplicationService applicationService,
+            UserService userService
+    ) {
         this.applicationService = applicationService;
         this.userService = userService;
     }
 
     @PostMapping
+    @Operation(summary = "Create application")
     public ResponseEntity<ApplicationResponse> createApplication(
             @Valid @RequestBody CreateApplicationRequest request,
             Authentication authentication
@@ -48,6 +58,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get application")
     public ResponseEntity<ApplicationResponse> getApplicationById(
             @PathVariable Long id
     ) {
@@ -56,7 +67,9 @@ public class ApplicationController {
     }
 
     @GetMapping
+    @Operation(summary = "List applications")
     public ResponseEntity<Page<ApplicationResponse>> getAllApplications(
+            @ParameterObject
             @PageableDefault(size = 20, sort = "id") Pageable pageable
     ) {
         Page<ApplicationResponse> applications =
@@ -67,6 +80,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/by-name")
+    @Operation(summary = "Find application by name")
     public ResponseEntity<ApplicationResponse> getApplicationByName(
             @RequestParam String name
     ) {
@@ -75,6 +89,7 @@ public class ApplicationController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update application")
     public ResponseEntity<ApplicationResponse> updateApplication(
             @PathVariable Long id,
             @Valid @RequestBody UpdateApplicationRequest request,
@@ -91,6 +106,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/{id}/activate")
+    @Operation(summary = "Activate application")
     public ResponseEntity<ApplicationResponse> activateApplication(
             @PathVariable Long id,
             Authentication authentication
@@ -104,6 +120,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/{id}/deactivate")
+    @Operation(summary = "Deactivate application")
     public ResponseEntity<ApplicationResponse> deactivateApplication(
             @PathVariable Long id,
             Authentication authentication

@@ -1,3 +1,4 @@
+
 package com.ravikanth.releasemanagement.changerequest;
 
 import com.ravikanth.releasemanagement.changerequest.dto.ChangeRequestResponse;
@@ -7,6 +8,9 @@ import com.ravikanth.releasemanagement.user.User;
 import com.ravikanth.releasemanagement.user.UserService;
 
 import jakarta.validation.Valid;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+@Tag(name = "Change Requests", description = "Create and manage change requests.")
 public class ChangeRequestController {
 
     private final ChangeRequestService changeRequestService;
@@ -34,6 +39,7 @@ public class ChangeRequestController {
     }
 
     @PostMapping("/environments/{environmentId}/change-requests")
+    @Operation(summary = "Create change request")
     public ResponseEntity<ChangeRequestResponse> createChangeRequest(
             @PathVariable Long environmentId,
             @Valid @RequestBody CreateChangeRequestRequest request,
@@ -54,6 +60,7 @@ public class ChangeRequestController {
     }
 
     @GetMapping("/change-requests/{id}")
+    @Operation(summary = "Get change request")
     public ResponseEntity<ChangeRequestResponse> getChangeRequestById(
             @PathVariable Long id
     ) {
@@ -66,6 +73,7 @@ public class ChangeRequestController {
     }
 
     @GetMapping("/environments/{environmentId}/change-requests")
+    @Operation(summary = "List environment change requests")
     public ResponseEntity<Page<ChangeRequestResponse>> getChangeRequestsByEnvironment(
             @PathVariable Long environmentId,
             @PageableDefault(size = 20, sort = "id") Pageable pageable
@@ -79,6 +87,7 @@ public class ChangeRequestController {
     }
 
     @GetMapping("/users/{userId}/change-requests")
+    @Operation(summary = "List requester change requests")
     public ResponseEntity<Page<ChangeRequestResponse>> getChangeRequestsByRequester(
             @PathVariable Long userId,
             @PageableDefault(size = 20, sort = "id") Pageable pageable
@@ -92,6 +101,7 @@ public class ChangeRequestController {
     }
 
     @PutMapping("/change-requests/{id}")
+    @Operation(summary = "Update change request")
     public ResponseEntity<ChangeRequestResponse> updateChangeRequest(
             @PathVariable Long id,
             @Valid @RequestBody UpdateChangeRequestRequest request
@@ -111,6 +121,7 @@ public class ChangeRequestController {
     }
 
     @PatchMapping("/change-requests/{id}/submit")
+    @Operation(summary = "Submit change request")
     public ResponseEntity<ChangeRequestResponse> submitChangeRequest(
             @PathVariable Long id,
             Authentication authentication

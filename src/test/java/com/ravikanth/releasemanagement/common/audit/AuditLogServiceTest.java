@@ -54,7 +54,6 @@ class AuditLogServiceTest {
                 "CREATED",
                 "Application created"
         );
-
         assertNotNull(result);
         assertSame(user, result.getUser());
         assertEquals("APPLICATION", result.getEntityType());
@@ -324,4 +323,45 @@ class AuditLogServiceTest {
                 )
         );
     }
+
+
+
+        @Test
+        void recordAuditShouldEscapeSpecialCharactersInDetails() {
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.of(user));
+
+        when(auditLogRepository.save(any(AuditLog.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        AuditLog result = auditLogService.recordAudit(
+                1L,
+                "APPLICATION",
+                10L,
+                "CREATED",
+                "Created \"test\" with path C:\\files\nNext line\tTabbed"
+        );
+
+        assertEquals(
+                "{\"message\":\"Created \\\"test\\\" with path C:\\\\files\\nNext line\\tTabbed\"}",
+                result.getDetails()
+        );
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

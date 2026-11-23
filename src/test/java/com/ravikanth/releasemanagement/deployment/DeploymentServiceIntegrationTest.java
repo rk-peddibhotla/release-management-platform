@@ -42,7 +42,6 @@ class DeploymentServiceIntegrationTest {
     @Test
     void shouldPersistSuccessfulDeploymentAndCompleteRelease() {
 
-        // 1. Create an engineer.
         User engineer = new User(
                 "Integration Test Engineer",
                 "deployment.integration@example.com",
@@ -52,17 +51,14 @@ class DeploymentServiceIntegrationTest {
 
         entityManager.persist(engineer);
 
-        // 2. Create an application.
         Application application = new Application(
                 "Deployment Integration Test App",
                 "Application created for deployment integration testing."
         );
 
         entityManager.persist(application);
-
         entityManager.flush();
 
-        // 3. Create an environment.
         Environment environment = new Environment(
                 application,
                 "TEST",
@@ -70,10 +66,8 @@ class DeploymentServiceIntegrationTest {
         );
 
         entityManager.persist(environment);
-
         entityManager.flush();
 
-        // 4. Create a release and move it to IN_PROGRESS.
         Release release = new Release(
                 environment,
                 "1.0.0",
@@ -85,13 +79,11 @@ class DeploymentServiceIntegrationTest {
         release.start();
 
         entityManager.persist(release);
-
         entityManager.flush();
 
         Long releaseId = release.getId();
         Long engineerId = engineer.getId();
 
-        // 5. Record a successful deployment.
         OffsetDateTime startedAt = OffsetDateTime.now().minusMinutes(5);
         OffsetDateTime completedAt = OffsetDateTime.now();
 
@@ -108,12 +100,9 @@ class DeploymentServiceIntegrationTest {
         assertEquals(1, deployment.getAttemptNumber());
         assertEquals(DeploymentStatus.SUCCESS, deployment.getStatus());
 
-        // 6. Flush and clear the persistence context.
-        // This ensures the following assertions read persisted data.
         entityManager.flush();
         entityManager.clear();
 
-        // 7. Verify the deployment was persisted.
         Deployment persistedDeployment = deploymentRepository
                 .findById(deployment.getId())
                 .orElseThrow();
@@ -128,7 +117,6 @@ class DeploymentServiceIntegrationTest {
                 persistedDeployment.getNotes()
         );
 
-        // 8. Verify the release was completed.
         Release persistedRelease = releaseRepository
                 .findById(releaseId)
                 .orElseThrow();
@@ -138,7 +126,6 @@ class DeploymentServiceIntegrationTest {
                 persistedRelease.getStatus()
         );
 
-        // 9. Verify both audit records were persisted.
         List<AuditLog> auditLogs = entityManager.createQuery(
                 """
                 SELECT a
@@ -163,6 +150,177 @@ class DeploymentServiceIntegrationTest {
         assertEquals(
                 "RELEASE_COMPLETED",
                 auditLogs.get(1).getAction()
+        );
+    }
+
+    @Test
+    void shouldPersistFailedDeploymentAndSuccessfulRetry() {
+
+        // 1. Create an engineer.
+        User engineer = new User(
+                "Retry Integration Engineer",
+                "deployment.retry@example.com",
+                "test-password-hash",
+                UserRole.ENGINEER
+        );
+
+        entityManager.persist(engineer);
+
+        // 2. Create an application.
+        Application application = new Application(
+                "Deployment Retry Integration App",
+                "Application created for deployment retry testing."
+        );
+
+        entityManager.persist(application);
+        entityManager.flush();
+
+        // 3. Create an environment.
+        Environment environment = new Environment(
+                application,
+                "TEST",
+                EnvironmentType.TESTING
+        );
+
+        entityManager.persist(environment);
+        entityManager.flush();
+
+        // 4. Create a release and move it to IN_PROGRESS.
+        Release release = new Release(
+                environment,
+                "2.0.0",
+                "Deployment retry integration test",
+                OffsetDateTime.now(),
+                engineer
+        );
+
+        release.start();
+
+        entityManager.persist(release);
+        entityManager.flush();
+
+        Long releaseId = release.getId();
+        Long engineerId = engineer.getId();
+
+        // 5. Record the first attempt as FAILED.
+        OffsetDateTime firstStartedAt = OffsetDateTime.now().minusMinutes(10);
+        OffsetDateTime firstCompletedAt = OffsetDateTime.now().minusMinutes(5);
+
+        Deployment failedDeployment = deploymentService.recordDeployment(
+                releaseId,
+                engineerId,
+                DeploymentStatus.FAILED,
+                firstStartedAt,
+                firstCompletedAt,
+                "Initial deployment failed."
+        );
+
+        assertNotNull(failedDeployment.getId());
+        assertEquals(1, failedDeployment.getAttemptNumber());
+        assertEquals(DeploymentStatus.FAILED, failedDeployment.getStatus());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // 6. Verify the failed attempt was persisted.
+        Deployment persistedFailedDeployment = deploymentRepository
+                .findById(failedDeployment.getId())
+                .orElseThrow();
+
+        assertEquals(1, persistedFailedDeployment.getAttemptNumber());
+        assertEquals(
+                DeploymentStatus.FAILED,
+                persistedFailedDeployment.getStatus()
+        );
+
+        // 7. Verify the release remains IN_PROGRESS.
+        Release releaseAfterFailure = releaseRepository
+                .findById(releaseId)
+                .orElseThrow();
+
+        assertEquals(
+                ReleaseStatus.IN_PROGRESS,
+                releaseAfterFailure.getStatus()
+        );
+
+        // 8. Record the second attempt as SUCCESS.
+        OffsetDateTime retryStartedAt = OffsetDateTime.now().minusMinutes(3);
+        OffsetDateTime retryCompletedAt = OffsetDateTime.now();
+
+        Deployment successfulRetry = deploymentService.recordDeployment(
+                releaseId,
+                engineerId,
+                DeploymentStatus.SUCCESS,
+                retryStartedAt,
+                retryCompletedAt,
+                "Deployment succeeded on retry."
+        );
+
+        assertNotNull(successfulRetry.getId());
+        assertEquals(2, successfulRetry.getAttemptNumber());
+        assertEquals(DeploymentStatus.SUCCESS, successfulRetry.getStatus());
+
+        // 9. Flush and clear to verify persisted data.
+        entityManager.flush();
+        entityManager.clear();
+
+        List<Deployment> deployments = deploymentRepository
+                .findByReleaseIdOrderByAttemptNumberAsc(releaseId);
+
+        assertEquals(2, deployments.size());
+
+        assertEquals(1, deployments.get(0).getAttemptNumber());
+        assertEquals(
+                DeploymentStatus.FAILED,
+                deployments.get(0).getStatus()
+        );
+
+        assertEquals(2, deployments.get(1).getAttemptNumber());
+        assertEquals(
+                DeploymentStatus.SUCCESS,
+                deployments.get(1).getStatus()
+        );
+
+        // 10. Verify the release is now COMPLETED.
+        Release completedRelease = releaseRepository
+                .findById(releaseId)
+                .orElseThrow();
+
+        assertEquals(
+                ReleaseStatus.COMPLETED,
+                completedRelease.getStatus()
+        );
+
+        // 11. Verify all three audit records were persisted.
+        List<AuditLog> auditLogs = entityManager.createQuery(
+                """
+                SELECT a
+                FROM AuditLog a
+                WHERE a.entityType = :entityType
+                  AND a.entityId = :entityId
+                ORDER BY a.id
+                """,
+                AuditLog.class
+        )
+        .setParameter("entityType", "RELEASE")
+        .setParameter("entityId", releaseId)
+        .getResultList();
+
+        assertEquals(3, auditLogs.size());
+
+        assertEquals(
+                "DEPLOYMENT_FAILED",
+                auditLogs.get(0).getAction()
+        );
+
+        assertEquals(
+                "DEPLOYMENT_SUCCEEDED",
+                auditLogs.get(1).getAction()
+        );
+
+        assertEquals(
+                "RELEASE_COMPLETED",
+                auditLogs.get(2).getAction()
         );
     }
 }

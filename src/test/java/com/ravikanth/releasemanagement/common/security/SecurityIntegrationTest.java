@@ -13,6 +13,10 @@ import com.ravikanth.releasemanagement.environment.EnvironmentService;
 import com.ravikanth.releasemanagement.release.ReleaseService;
 import com.ravikanth.releasemanagement.user.UserService;
 
+
+
+import com.ravikanth.releasemanagement.common.audit.AuditLogService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -69,6 +73,9 @@ class SecurityIntegrationTest {
 
     @MockitoBean
     private DeploymentService deploymentService;
+
+    @MockitoBean
+    private AuditLogService auditLogService;
 
     @Test
     void shouldReturn401WhenAuthorizationHeaderIsMissing()

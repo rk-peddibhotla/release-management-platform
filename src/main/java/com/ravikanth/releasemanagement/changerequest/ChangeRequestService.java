@@ -222,4 +222,24 @@ public class ChangeRequestService {
 
         return description.trim();
     }
+
+
+    @Transactional(readOnly = true)
+    public Page<ChangeRequest> getPendingChangeRequests(Pageable pageable) {
+        return changeRequestRepository.findByStatus(
+                ChangeRequestStatus.SUBMITTED,
+                pageable
+        );
+}
+
+
+
+
+
+
+
+
+
+
+
 }

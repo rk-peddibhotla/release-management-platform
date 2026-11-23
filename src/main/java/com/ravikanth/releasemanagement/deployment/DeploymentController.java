@@ -5,6 +5,9 @@ import com.ravikanth.releasemanagement.deployment.dto.DeploymentResponse;
 import com.ravikanth.releasemanagement.user.User;
 import com.ravikanth.releasemanagement.user.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+@Tag(
+        name = "Deployments",
+        description = "Record and review deployment results."
+)
 public class DeploymentController {
 
     private final DeploymentService deploymentService;
@@ -31,6 +38,7 @@ public class DeploymentController {
     }
 
     @PostMapping("/releases/{releaseId}/deployments")
+    @Operation(summary = "Record deployment result")
     public ResponseEntity<DeploymentResponse> recordDeployment(
             @PathVariable Long releaseId,
             @Valid @RequestBody DeploymentRequest request,
@@ -51,6 +59,7 @@ public class DeploymentController {
     }
 
     @GetMapping("/deployments/{id}")
+    @Operation(summary = "Get deployment")
     public ResponseEntity<DeploymentResponse> getDeploymentById(
             @PathVariable Long id
     ) {
@@ -62,6 +71,7 @@ public class DeploymentController {
     }
 
     @GetMapping("/releases/{releaseId}/deployments")
+    @Operation(summary = "List release deployments")
     public ResponseEntity<List<DeploymentResponse>> getDeploymentsByReleaseId(
             @PathVariable Long releaseId
     ) {

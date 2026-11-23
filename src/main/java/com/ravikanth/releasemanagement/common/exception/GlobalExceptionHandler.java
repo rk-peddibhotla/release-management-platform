@@ -22,7 +22,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -30,6 +31,9 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+        private static final Logger log =
+        LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler({
             ApplicationNotFoundException.class,
@@ -167,18 +171,24 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
-            Exception exception,
-            HttpServletRequest request
-    ) {
+   @ExceptionHandler(Exception.class)
+        public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
+                Exception exception,
+                HttpServletRequest request
+        ) {
+        log.error(
+                "Unexpected error while processing request: {}",
+                request.getRequestURI(),
+                exception
+        );
+
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred.",
                 request.getRequestURI(),
                 Map.of()
         );
-    }
+        }
 
 
 
